@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "module": "nodenext",
+    "target": "ESNext",
+    "outDir": "./dist",
+    "rootDir": "..",
+    "allowUmdGlobalAccess": true,
+    "moduleResolution": "nodenext",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "declaration": false,
+    "baseUrl": ".",
+    "paths": {
+      "@loader": ["../src/ts/loaders/dev.ts"],
+      "@src/*": ["../src/ts/*"]
+    }
+  },
+  "include": ["../src/ts/**/*", "**/*"],
+  "exclude": ["node_modules", "dist"]
+}

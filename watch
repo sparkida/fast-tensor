@@ -1,0 +1,21 @@
+DEBOUNCE_DELAY=1
+# Last event timestamp and file
+declare -A LAST_EVENT
+inotifywait -m -e modify --format '%f' ./src/cpp |
+  while read file; do 
+
+    if [[ ! $file =~ ".cpp" && ! $file =~ ".h" ]]; then
+      continue
+    fi
+
+    current_time=$(date +%s)
+    last_time=${LAST_EVENT["$file"]:-0}
+
+    # Trigger make only if debounce delay has passed
+    if (( current_time - last_time >= DEBOUNCE_DELAY )); then
+      echo "Change detected in $file. Running make..."
+      make all
+      LAST_EVENT["$file"]=$current_time
+    fi
+  done
+

@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "module": "nodenext",
+    "target": "ESNext",
+    "outDir": "./dist",
+    "rootDir": "./src/ts",
+    "moduleResolution": "nodenext",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "declaration": true,
+    "declarationDir": "./dist",
+    "declarationMap": false,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@loader": ["src/ts/loaders/node.ts"]
+    }
+  },
+  "include": ["src/ts/**/*", "src/ts/**/*.d.ts"],
+  "exclude": ["node_modules", "dist"]
+}

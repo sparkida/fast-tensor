@@ -1,0 +1,10 @@
+services:
+  emsdk:
+    container_name: emscripten
+    image: emscripten/emsdk
+    environment:
+      - DUID=${DUID}
+      - DGID=${DGID}
+    user: "${DUID}:${DGID}"
+    volumes:
+      - ./src/cpp:/src

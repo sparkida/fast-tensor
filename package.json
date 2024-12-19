@@ -1,0 +1,66 @@
+{
+  "name": "fast-tensor",
+  "version": "0.0.1",
+  "description": "High-performance matrix math for the modern web. Powered by WASM.",
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "rollup": "npx rollup -c",
+    "build": "make all && npm run rollup",
+    "lint": "tsc --noEmit && npx eslint src/ts",
+    "test": "NODE_ENV=test TSX_TSCONFIG_PATH=./test/tsconfig.json npx mocha"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "dist/index.d.ts",
+      "browser": {
+        "import": "./dist/index.esm.js",
+        "require": "./dist/index.cjs.js"
+      },
+      "node": {
+        "import": "./dist/index.node.esm.js",
+        "require": "./dist/index.node.cjs.js"
+      },
+      "default": "./dist/index.node.esm.js"
+    },
+    "./tensor.wasm": "./dist/tensor.wasm"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@hoff97/tensor-js": "^0.3.0",
+    "@rollup/plugin-alias": "^5.1.1",
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@tensorflow/tfjs": "^4.22.0",
+    "@types/chai": "^5.0.1",
+    "@types/mocha": "^10.0.10",
+    "chai": "^5.1.2",
+    "eslint": "^9.17.0",
+    "mathjs": "^14.0.1",
+    "ml-matrix": "^6.12.0",
+    "mocha": "^11.0.1",
+    "prettier": "^3.3.3",
+    "rollup": "^4.28.1",
+    "rollup-plugin-delete": "^2.1.0",
+    "rollup-plugin-dts": "^6.1.1",
+    "tree-sitter": "^0.21.1",
+    "tree-sitter-cpp": "^0.23.4",
+    "tslib": "^2.8.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.0"
+  },
+  "keywords": [
+    "matrix",
+    "vector",
+    "tensor",
+    "math",
+    "wasm"
+  ],
+  "author": "Nick Riley <nick@sparkida.com>",
+  "license": "MIT"
+}
