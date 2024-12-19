@@ -1,0 +1,92 @@
+name: Test Build
+
+on:
+  workflow_call:
+    inputs:
+      release:
+        description: "Set to true to prepare a release artifact"
+        required: false
+        default: false
+        type: boolean
+
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Set up Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Cache Node Modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Run lint
+      - name: Run Linter
+        run: npm run lint
+
+      - name: Restore Pulled Docker Image Cache
+        id: cache-docker
+        uses: actions/cache@v4
+        with:
+          path: ./docker-cache
+          key: ${{ runner.os }}-docker-emsdk
+
+      - name: Pull Docker Image
+        if: ${{ steps.cache-docker.outputs.cache-hit != 'true' }}
+        run: |
+          mkdir -p ./docker-cache
+          docker pull emscripten/emsdk:latest
+          docker save emscripten/emsdk:latest -o ./docker-cache/emsdk.tar
+
+      - name: Load Cached Docker Image
+        if: ${{ steps.cache-docker.outputs.cache-hit == 'true' }}
+        run: docker load -i ./docker-cache/emsdk.tar
+
+      # Install Docker Compose
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*?(?=")')/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
+      # Run npm build (calls make all -> docker-compose)
+      - name: Build the project
+        env:
+          DOCKER_BUILDKIT: 1
+        run: npm run build
+
+      # Run tests
+      - name: Run Tests
+        run: npm run test
+
+      # If `release` is true, prepare a release artifact
+      - name: Prepare Release Artifact
+        if: ${{ inputs.release }}
+        run: npm pack
+
+      # Upload the `.tgz` package file if `release` is true
+      - name: Upload Release Artifact
+        if: ${{ inputs.release }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package
+          path: ./*.tgz

@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "rollup": "npx rollup -c",
-    "build": "make all && npm run rollup",
+    "build": "make all",
     "lint": "tsc --noEmit && npx eslint src/ts",
     "test": "NODE_ENV=test TSX_TSCONFIG_PATH=./test/tsconfig.json npx mocha"
   },

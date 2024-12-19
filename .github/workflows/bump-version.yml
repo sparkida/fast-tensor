@@ -1,0 +1,38 @@
+name: Bump Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Specify the release type: patch, minor, or major'
+        required: true
+        default: 'patch'
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 'lts/*'
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Bump version
+        run: |
+          RELEASE_TYPE=${{ github.event.inputs.release_type }}
+          if [[ "$RELEASE_TYPE" != "patch" && "$RELEASE_TYPE" != "minor" && "$RELEASE_TYPE" != "major" ]]; then
+            echo "Error: Invalid release type. Use patch, minor, or major."
+            exit 1
+          fi
+          echo "Bumping version as $RELEASE_TYPE"
+          npm version $RELEASE_TYPE -m "Bump version to %s"
+          git push origin HEAD --tags
