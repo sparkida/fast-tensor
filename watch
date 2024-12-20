@@ -14,7 +14,7 @@ inotifywait -m -e modify --format '%f' ./src/cpp |
     # Trigger make only if debounce delay has passed
     if (( current_time - last_time >= DEBOUNCE_DELAY )); then
       echo "Change detected in $file. Running make..."
-      make all
+      make dev
       LAST_EVENT["$file"]=$current_time
     fi
   done

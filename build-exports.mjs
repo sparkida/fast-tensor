@@ -44,9 +44,9 @@ function mapCppTypeToTs(cppType) {
   return cppToTsTypeMap[cppType] || 'any';
 }
 
-// Read and parse the Bindings.cpp file
-const cppCode = fs.readFileSync('./src/cpp/Bindings.cpp', 'utf8');
-const tree = parser.parse(cppCode);
+
+const files = fs.readdirSync('./src/cpp/core');
+
 
 function findFuncAndParams(node) {
   const nextDeclarator = node.childForFieldName('declarator');
@@ -56,16 +56,16 @@ function findFuncAndParams(node) {
   return findFuncAndParams(nextDeclarator);
 }
 
-// Function to extract function signatures from the AST
-function extractFunctionSignatures(functionNodes) {
-  const exportNames = [
-    '_malloc',
-    '_free',
-  ];
-  const functions = [
-    '    _malloc: (size: number) => number;',
-    '    _free: (ptr: number) => void;',
-  ];
+const exportNames = [
+  '_malloc',
+  '_free',
+];
+const functionSignatures = [
+  '    _malloc: (size: number) => number;',
+  '    _free: (ptr: number) => void;',
+];
+
+function buildSignatures(functionNodes) {
   for (const funcNode of functionNodes) {
     // Get return type
     let returnType = funcNode.childForFieldName('type').text;
@@ -101,18 +101,25 @@ function extractFunctionSignatures(functionNodes) {
     }
     // Generate the TypeScript function signature
     const tsSignature = `    ${funcName}: (${parameters.join(', ')}) => ${returnType};`;
-    functions.push(tsSignature);
+    functionSignatures.push(tsSignature);
   }
-
-  return [functions, exportNames];
 }
 
-const linkage = tree.rootNode.children.find(n => n.type === 'linkage_specification');
-const declarations = linkage.children.find(n => n.type === 'declaration_list');
-const functionNodes = declarations.children.filter(n => n.type === 'function_definition')
+// Function to extract function signatures from the AST
+function extractFunctionSignatures(files) {
+  for (const file of files) {
+    // Read and parse the Bindings.cpp file
+    const cppCode = fs.readFileSync(`./src/cpp/core/${file}`, 'utf8');
+    const tree = parser.parse(cppCode);
+    const linkage = tree.rootNode.children.find(n => n.type === 'linkage_specification');
+    const declarations = linkage.children.find(n => n.type === 'declaration_list');
+    const functionNodes = declarations.children.filter(n => n.type === 'function_definition')
+    buildSignatures(functionNodes);
+  }
+}
 
 // Extract and output the TypeScript signatures
-const [signatures, exportNames] = extractFunctionSignatures(functionNodes);
-fs.writeFileSync('./src/ts/types/WasmModule.d.ts', header + signatures.join('\n') + footer);
+extractFunctionSignatures(files);
+fs.writeFileSync('./src/ts/types/WasmModule.d.ts', header + functionSignatures.join('\n') + footer);
 //console.log('TypeScript signatures generated in ./src/ts/WasmModule.d.ts');
 process.stdout.write(JSON.stringify(exportNames).replaceAll('"', "'"));

@@ -1,4 +1,4 @@
-#include "Kalman.h"
+#include "../Kalman.h"
 
 /*
  * q - process noise - A smaller value will average movement more
@@ -11,7 +11,7 @@ void KalmanFilter::reset() {
   initialized = false;
 }
 
-// Apply Kalman filter to flattened Float32Array of 68 landmarks (136 values)
+// Observation is any 1d array of data
 void KalmanFilter::update(Real* observation, size_t size, Real q_temp, Real r_temp) {
   Real cur_q = q_temp < 0 ? q : q_temp;
   Real cur_r = r_temp < 0 ? r : r_temp;
@@ -43,3 +43,22 @@ void KalmanFilter::update(Real* observation, size_t size, Real q_temp, Real r_te
   }
 }
 
+extern "C" {
+
+  KalmanFilter* kalman_create(Real q, Real r) {
+    return new KalmanFilter(q, r);
+  }
+  
+  void kalman_delete(KalmanFilter* kalman) {
+    delete kalman;
+  }
+
+  void kalman_reset(KalmanFilter* kalman) {
+    kalman->reset();
+  }
+
+  void kalman_update(KalmanFilter* kalman, Real* observation, size_t size, const Real q_temp, const Real r_temp) {
+    kalman->update(observation, size, q_temp, r_temp);
+  }
+
+}

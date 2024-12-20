@@ -1,8 +1,9 @@
-import { Tensor } from '@src/Tensor.js';
+import * as ft from '@src/Tensor.js';
 import { expect } from 'chai';
 
 declare global {
-  var Tensor: typeof Tensor; // Declare the type for Tensor
+  var ft: typeof ft;
+  var Tensor: typeof tf.Tensor; // Declare the type for Tensor
   var expect: typeof expect; // Declare the type for expect
 }
 

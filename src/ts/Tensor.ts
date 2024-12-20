@@ -26,6 +26,9 @@ interface InferedShape {
   is1d: boolean;
 }
 
+export function tensor(data?: Data | typeof NULL, shape?: Shape) : Tensor {
+  return new Tensor(data, shape);
+};
 // a way to override internal checks on data args
 // such as "zeros" which just needs a new Tensor of shape
 export class Tensor extends Interface {
@@ -267,11 +270,125 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
-  div(input: InputData): Tensor {
+  div(input: InputData, noNan = false): Tensor {
     const args = this.wireArgs(input);
-    const newPtr = this.Module._tensor_div(this.ptr, args.ptr, args.size);
+    const newPtr = this.Module._tensor_div(this.ptr, !!noNan, args.ptr, args.size);
     args.free();
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
+  }
+
+  divNoNan(input: InputData): Tensor {
+    return this.div(input, true);
+  }
+
+  private _maximum(tensor: Tensor): Tensor {
+    const newPtr = this.Module._tensor_maximum(this.ptr, tensor.ptr);
+    const mat = Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
+    return mat;
+  }
+
+  private _maximum_scalar(scalar: number): Tensor {
+    const newPtr = this.Module._tensor_maximum_scalar(this.ptr, scalar);
+    const mat = Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
+    return mat;
+  }
+
+  maximum(input: Tensor | number): Tensor {
+    if (input instanceof Tensor) {
+      return this._maximum(input);
+    } else if (typeof input === 'number') {
+      return this._maximum_scalar(input);
+    } else {
+      throw new TypeError('Maximum expects first argument to be a Tensor or number');
+    }
+  }
+
+  private _minimum(tensor: Tensor): Tensor {
+    const newPtr = this.Module._tensor_minimum(this.ptr, tensor.ptr);
+    const mat = Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
+    return mat;
+  }
+
+  private _minimum_scalar(scalar: number): Tensor {
+    const newPtr = this.Module._tensor_minimum_scalar(this.ptr, scalar);
+    const mat = Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
+    return mat;
+  }
+
+  minimum(input: Tensor | number): Tensor {
+    if (input instanceof Tensor) {
+      return this._minimum(input);
+    } else if (typeof input === 'number') {
+      return this._minimum_scalar(input);
+    } else {
+      throw new TypeError('Maximum expects first argument to be a Tensor or number');
+    }
+  }
+
+  private _mod(tensor: Tensor): Tensor {
+    const newPtr = this.Module._tensor_mod(this.ptr, tensor.ptr);
+    const mat = Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
+    return mat;
+  }
+
+  private _mod_scalar(scalar: number): Tensor {
+    const newPtr = this.Module._tensor_mod_scalar(this.ptr, scalar);
+    const mat = Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
+    return mat;
+  }
+
+  mod(input: Tensor | number): Tensor {
+    if (input instanceof Tensor) {
+      return this._mod(input);
+    } else if (typeof input === 'number') {
+      return this._mod_scalar(input);
+    } else {
+      throw new TypeError('Maximum expects first argument to be a Tensor or number');
+    }
+  }
+
+  private _pow(tensor: Tensor): Tensor {
+    const newPtr = this.Module._tensor_pow(this.ptr, tensor.ptr);
+    const mat = Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
+    return mat;
+  }
+
+  private _pow_scalar(scalar: number): Tensor {
+    const newPtr = this.Module._tensor_pow_scalar(this.ptr, scalar);
+    const mat = Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
+    return mat;
+  }
+
+  pow(input: Tensor | number): Tensor {
+    if (input instanceof Tensor) {
+      return this._pow(input);
+    } else if (typeof input === 'number') {
+      return this._pow_scalar(input);
+    } else {
+      throw new TypeError('Maximum expects first argument to be a Tensor or number');
+    }
+  }
+
+  private _squaredDiff(tensor: Tensor): Tensor {
+    const newPtr = this.Module._tensor_squared_diff(this.ptr, tensor.ptr);
+    const mat = Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
+    return mat;
+  }
+
+  private _squaredDiff_scalar(scalar: number): Tensor {
+    const newPtr = this.Module._tensor_squared_diff_scalar(this.ptr, scalar);
+    const mat = Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
+    return mat;
+  }
+
+  squaredDifference(input: Tensor | number): Tensor {
+    if (input instanceof Tensor) {
+      return this._squaredDiff(input);
+    } else if (typeof input === 'number') {
+      return this._squaredDiff_scalar(input);
+    } else {
+      throw new TypeError('Maximum expects first argument to be a Tensor or number');
+    }
   }
 
   square(): Tensor {
@@ -359,7 +476,7 @@ export class Tensor extends Interface {
     return new Tensor(data, s.is1d ? shape.slice(1) : shape);
   }
 
-  static identity(shape: Shape): Tensor {
+  static eye(shape: Shape): Tensor {
     const s = {} as InferedShape;
     Tensor.prototype._inferShape.call(s, null, shape);
     const {_rows, _cols} = s;
@@ -408,11 +525,11 @@ export class Tensor extends Interface {
     return new Tensor(new Float32Array(data), this.is1d ? shape.slice(1) : shape);
   }
 
-  identity(): Tensor {
+  eye(): Tensor {
     if (this.is1d) {
       throw new Error('Attempting to create identity with 1d shape');
     }
-    const newPtr = this.Module._tensor_identity(this.ptr);
+    const newPtr = this.Module._tensor_eye(this.ptr);
     return Tensor.fromPointer([this._cols, this._rows], false, newPtr);
   }
 

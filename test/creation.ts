@@ -18,16 +18,16 @@ export default function() {
     it('should throw error if matrix is not 1d');
   });
 
-  describe('identity', () => {
+  describe('eye', () => {
     it('should create an identity for a square matrix', () => {
       const mat1 = new Tensor([1,2,3,4], [2,2]);
-      const eye = mat1.identity();
+      const eye = mat1.eye();
       expect(eye.array()).to.deep.equal(
         [ [ 1, 0 ], [ 0, 1 ] ]
       );
     });
     it('should create an identity for a square matrix (static)', () => {
-      const eye = Tensor.identity([2,2]);
+      const eye = Tensor.eye([2,2]);
       expect(eye.array()).to.deep.equal(
         [ [ 1, 0 ], [ 0, 1 ] ]
       );

@@ -105,15 +105,111 @@ export default function() {
         [ [ -0.5, -2 ], [ -0.5, -0.5 ] ]
       );
     });
+  });
 
-    // TODO this should stay, but should add divNoNan like tf
-    it.skip('should handle division by 0', () => {
-      const a = new Tensor([1,2,3,4], [2,2]);
+  describe('divNoNan', () => {
+    it('should handle division by 0 and result in 0', () => {
+      const a = new Tensor([0,2,3,4], [2,2]);
       const b = new Tensor([0, 0,-6,-8], [2,2]);
-      const result = a.div(b);
+      const result = a.divNoNan(b);
       expect(result.array()).to.deep.equal(
         [ [ 0, 0 ], [ -0.5, -0.5 ] ]
       );
     });
+  });
+
+  describe('maximum', () => {
+    it('should return the maximum result of two tensors', () => {
+      const a = ft.tensor([1,2,2,4], [2,2]);
+      const b = ft.tensor([0,1,3,3], [2,2]);
+      const result = a.maximum(b);
+      expect(result.array()).to.deep.equal(
+        [ [ 1, 2 ], [ 3, 4 ] ]
+      );
+    });
+    it('should return the maximum result with scalar', () => {
+      const a = ft.tensor([1,2,3,4], [2,2]);
+      const result = a.maximum(3);
+      expect(result.array()).to.deep.equal(
+        [ [ 3, 3 ], [ 3, 4 ] ]
+      );
+    });
+    it('should throw an error if invalid type');
+  });
+
+  describe('minimum', () => {
+    it('should return the minimum result of two tensors', () => {
+      const a = ft.tensor([1,2,2,4], [2,2]);
+      const b = ft.tensor([0,1,3,3], [2,2]);
+      const result = a.minimum(b);
+      expect(result.array()).to.deep.equal(
+        [ [ 0, 1 ], [ 2, 3 ] ]
+      );
+    });
+    it('should return the minimum result with scalar', () => {
+      const a = ft.tensor([1,2,3,4], [2,2]);
+      const result = a.minimum(3);
+      expect(result.array()).to.deep.equal(
+        [ [ 1, 2 ], [ 3, 3 ] ]
+      );
+    });
+    it('should throw an error if invalid type');
+  });
+
+  describe('mod', () => {
+    it('should return the mod result of two tensors', () => {
+      const a = ft.tensor([2,2,2,4], [2,2]);
+      const b = ft.tensor([0,1,3,3], [2,2]);
+      const result = a.mod(b);
+      expect(result.array()).to.deep.equal(
+        [ [ NaN, 0 ], [ 2, 1 ] ]
+      );
+    });
+    it('should return the mod result with scalar', () => {
+      const a = ft.tensor([1,2,3,4], [2,2]);
+      const result = a.mod(3);
+      expect(result.array()).to.deep.equal(
+        [ [ 1, 2 ], [ 0, 1 ] ]
+      );
+    });
+    it('should throw an error if invalid type');
+  });
+
+  describe('pow', () => {
+    it('should return the pow result of two tensors', () => {
+      const a = ft.tensor([1,2,3]);
+      const b = ft.tensor([1,2,3]);
+      const result = a.pow(b);
+      expect(result.array()).to.deep.equal(
+        [ 1, 4, 27 ]
+      );
+    });
+    it('should return the pow result with scalar', () => {
+      const a = ft.tensor([1,2,3,4], [2,2]);
+      const result = a.pow(3);
+      expect(result.array()).to.deep.equal(
+        [ [ 1, 8 ], [ 27, 64 ] ]
+      );
+    });
+    it('should throw an error if invalid type');
+  });
+
+  describe('squaredDifference', () => {
+    it('should return the squaredDifference result of two tensors', () => {
+      const a = ft.tensor([1, 4, 3, 16]);
+      const b = ft.tensor([1, 2, 9, 4]);
+      const result = a.squaredDifference(b);
+      expect(result.array()).to.deep.equal(
+        [0, 4, 36, 144]
+      );
+    });
+    it('should return the squaredDifference result with scalar', () => {
+      const a = ft.tensor([2, 4, 6, 8]);
+      const result = a.squaredDifference(5);
+      expect(result.array()).to.deep.equal(
+        [ 9, 1, 1, 9 ]
+      );
+    });
+    it('should throw an error if invalid type');
   });
 }

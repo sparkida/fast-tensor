@@ -45,7 +45,7 @@ BIND_DIR := $(ROOT)/src/wasm
 DIST_DIR := $(ROOT)/dist
 
 # Sources
-SOURCES := Tensor.cpp Kalman.cpp Bindings.cpp
+SOURCES := core/*.cpp
 OUTPUT := tensor
 
 # Ensure output directory exists
