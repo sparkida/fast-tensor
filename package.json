@@ -1,6 +1,6 @@
 {
   "name": "fast-tensor",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "High-performance matrix math for the modern web. Powered by WASM.",
   "type": "module",
   "types": "dist/index.d.ts",
