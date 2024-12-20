@@ -36,12 +36,14 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: npm publish ./*.tgz
 
+      - name: Set Version
+        run: echo "RELEASE_VERSION=$(npm pkg get version)" >> $GITHUB_ENV
       # Create a GitHub release
       - name: Create GitHub Release
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
+          tag_name: "v${{ env.RELEASE_VERSION }}"
+          release_name: Release ${{ env.RELEASE_VERSION }}
           body: |
             This release was automatically built and published using GitHub Actions.
         env:
