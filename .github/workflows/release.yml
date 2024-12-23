@@ -36,8 +36,15 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: npm publish ./*.tgz
 
-      - name: Set Version
-        run: echo "RELEASE_VERSION=$(npm pkg get version)" >> $GITHUB_ENV
+      # Extract version from package.json
+      - name: Derive Release Version
+        id: get_version
+        run: |
+          mkdir extracted
+          tar -xzf ./*.tgz -C extracted
+          VERSION=$(node -p "require('./extracted/package/package.json').version")
+          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+
       # Create a GitHub release
       - name: Create GitHub Release
         uses: actions/create-release@v1
