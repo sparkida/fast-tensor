@@ -1,5 +1,4 @@
-#ifndef TENSOR_H
-#define TENSOR_H
+#pragma once
 
 #include <iostream>
 #include <memory>
@@ -53,8 +52,8 @@ class Tensor {
     // TODO tf.Variable - mutable objects
 
     Tensor deepcopy() const;
-    const std::vector<float>& data_ref() const;
-    std::vector<float>& data_ref();
+    const std::vector<Real>& data_ref() const;
+    std::vector<Real>& data_ref();
     //void ensure_unique();
     //Real get(size_t row, size_t col) const;
     //void set(size_t row, size_t col, Real value);
@@ -72,25 +71,47 @@ class Tensor {
     Tensor reverse(const int axis) const;
     Tensor stack(const Real* instances, size_t input_size) const;
 
+    template <typename Func>
+    Tensor apply_math_op(Func func) const;
+    // helper implemented in core.cpp
+    Tensor math_op(Real (*op)(Real)) const;
+
+    template <typename Func>
+    Tensor broadcast_op(const Real* input, size_t input_size, Func func) const;
+
+    // arithmetic
     Tensor add(const Real* input, size_t input_size) const;
     Tensor sub(const Real* input, size_t input_size) const;
     Tensor mul(const Real* input, size_t input_size) const;
     Tensor div(bool no_nan, const Real* input, size_t input_size) const;
-    Tensor maximum(const Real scalar) const;
-    Tensor maximum(const Tensor& other) const;
-    Tensor minimum(const Real scalar) const;
-    Tensor minimum(const Tensor& other) const;
-    Tensor mod(const Real scalar) const;
-    Tensor mod(const Tensor& other) const;
-    Tensor pow(const Real scalar) const;
-    Tensor pow(const Tensor& other) const;
-    Tensor squared_diff(const Real scalar) const;
-    Tensor squared_diff(const Tensor& other) const;
+
+    Tensor maximum(const Real* input, size_t input_size) const;
+    Tensor minimum(const Real* input, size_t input_size) const;
+    Tensor mod(const Real* input, size_t input_size) const;
+    Tensor pow(const Real* input, size_t input_size) const;
+    Tensor squared_diff(const Real* input, size_t input_size) const;
+
+
+    // basicmath
+    Tensor abs() const;
+    Tensor acos() const;
+    Tensor acosh() const;
+    Tensor asin() const;
+    Tensor asinh() const;
+    Tensor atan() const;
+    Tensor atan2(const Real* input, size_t input_size) const;
+    Tensor atanh() const;
+    Tensor ceil() const;
+    Tensor clip(const Real lower, const Real upper) const;
+    Tensor floor() const;
 
     Tensor square() const;
     Tensor mean(int axis, bool keepdims = false) const;
+
+    // matrices
     Tensor norm(NORM_ORD ord, int axis, bool keepdims = false) const;
     Tensor matmul(const Tensor& other) const;
+
   private:
     Real INF = std::numeric_limits<Real>::infinity();
 };
@@ -99,5 +120,4 @@ class Tensor {
 // the additional interop to sync it
 void update_shape_wire(Tensor* tensor, int* shape_wire);
 
-
-#endif
+#include "./Tensor.tpp"

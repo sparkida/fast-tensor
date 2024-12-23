@@ -56,6 +56,11 @@ std::vector<Real>& Tensor::data_ref() {
   return *data;
 }
 
+Tensor Tensor::math_op(float (*math_func)(float)) const {
+  return apply_math_op(math_func);
+}
+
+
 /*
 // Get the value at (row, col)
 Real Tensor::get(size_t row, size_t col) const {
