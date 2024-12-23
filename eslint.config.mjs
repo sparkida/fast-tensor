@@ -23,6 +23,9 @@ export default tseslint.config([
       '@typescript-eslint/only-throw-error': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/unbound-method': ['error', {
+        ignoreStatic: true,
+      }],
       'no-console': 'warn',
       'no-prototype-builtins': 'off',
     },

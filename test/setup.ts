@@ -1,4 +1,4 @@
-import * as ft from '@src/Tensor.js'; 
+import * as ft from '@src/index.js'; 
 import { expect } from 'chai';
 
 globalThis.expect = expect;
