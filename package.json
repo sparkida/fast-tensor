@@ -1,6 +1,6 @@
 {
   "name": "fast-tensor",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "High-performance matrix math for realtime applications. Powered by WASM.",
   "repository": "github:sparkida/fast-tensor",
   "type": "module",
