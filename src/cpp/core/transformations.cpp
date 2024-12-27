@@ -24,12 +24,29 @@ Tensor Tensor::pad(Real constant, size_t rpad_before, /*{{{*/
 Tensor Tensor::reshape(int new_rows, int new_cols) const {/*{{{*/
   size_t total_elements = (*data).size();
   int inferred_rows = new_rows;
-  int inferred_cols = new_cols == -2 ? -1 : new_cols; // Use -1 as the default for inference
+  // we pass -2 as null alias, which means we'll infer the column size
+  int inferred_cols = new_cols == -2 ? -1 : new_cols;
   bool became_1d = false;
 
-  // Adjust logic to avoid breaking when one dimension is -1 and the other is std::nullopt
-  if (inferred_rows == -1 && new_cols == -1) {
-    throw std::invalid_argument("At most one dimension can be -1");
+  std::cout << inferred_cols << " + " << new_cols << std::endl;
+  // handle 
+  if (inferred_rows == -1 && (inferred_cols < 1 && new_cols != -2)) {
+    std::string message = "Shapes can not be < 0. Found " \
+                           + std::to_string(inferred_cols) \
+                           + " at dim 1";
+    report_error(message.c_str());
+  } else if ((inferred_rows == 0 && inferred_cols == -1) || (inferred_rows == -1 && inferred_cols == 0)) {
+    std::string message = "Cannot infer the missing size in [" \
+                           + std::to_string(inferred_rows) + "," \
+                           + std::to_string(inferred_cols) + "]";
+    report_error(message.c_str());
+  } else if (inferred_rows > 0 && inferred_cols > 0 \
+      && inferred_rows * inferred_cols != static_cast<int>(total_elements)) {
+    std::string message = "Size(" + std::to_string(total_elements) \
+                           + ") must match the product of shape " \
+                           + std::to_string(inferred_rows) + "," \
+                           + std::to_string(inferred_cols);
+    report_error(message.c_str());
   }
 
   if (inferred_rows == -1) {
@@ -39,23 +56,23 @@ Tensor Tensor::reshape(int new_rows, int new_cols) const {/*{{{*/
       became_1d = true;
       inferred_rows = 1;
       inferred_cols = static_cast<int>(total_elements);
-    } else if (inferred_cols < 1 || total_elements % inferred_cols != 0) {
-      throw std::invalid_argument("New dimensions are incompatible with the total number of elements");
+    } else if (total_elements % inferred_cols != 0) {
+      std::string message = "The implicit shape can't be a fractional number. Got " \
+                             + std::to_string(total_elements) \
+                             + " / " + std::to_string(inferred_cols);
+      report_error(message.c_str());
     } else {
       inferred_rows = total_elements / inferred_cols;
     }
   } else if (inferred_cols == -1) {
     // Infer cols from rows
-    if (inferred_rows < 1 || total_elements % inferred_rows != 0) {
-      throw std::invalid_argument("New dimensions are incompatible with the total number of elements");
+    if (total_elements % inferred_rows != 0) {
+      std::string message = "The implicit shape can't be a fractional number. Got " \
+                             + std::to_string(total_elements) \
+                             + " / " + std::to_string(inferred_rows);
+      report_error(message.c_str());
     }
     inferred_cols = total_elements / inferred_rows;
-  }
-
-  // Validate dimensions
-  if (inferred_rows <= 0 || inferred_cols <= 0 
-      || inferred_rows * inferred_cols != static_cast<int>(total_elements)) {
-    throw std::invalid_argument("New dimensions do not match the total number of elements");
   }
 
   // return a shallow copy of data via shared pointer

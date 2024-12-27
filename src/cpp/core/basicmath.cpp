@@ -1,8 +1,5 @@
 #include "../Tensor.h"
 
-
-
-
 Tensor Tensor::abs() const { return math_op(std::abs); }
 Tensor Tensor::acos() const { return math_op(std::acos); }
 Tensor Tensor::acosh() const { return math_op(std::acosh); }
@@ -27,6 +24,8 @@ Tensor Tensor::clip(const Real lower, const Real upper) const {
   }
   return result;
 }
+Tensor Tensor::cos() const { return math_op(std::cos); }
+Tensor Tensor::cosh() const { return math_op(std::cosh); }
 Tensor Tensor::floor() const { return math_op(std::floor); }
 
 // Mean
@@ -100,6 +99,8 @@ extern "C" {
   Tensor* tensor_clip(Tensor* tensor, const Real lower, const Real upper) {
     return new Tensor(tensor->clip(lower, upper));
   }
+  Tensor* tensor_cos(Tensor* tensor) { return new Tensor(tensor->cos()); }
+  Tensor* tensor_cosh(Tensor* tensor) { return new Tensor(tensor->cosh()); }
   Tensor* tensor_floor(Tensor* tensor) { return new Tensor(tensor->floor()); }
 
   Tensor* tensor_mean(

@@ -1,12 +1,15 @@
 #pragma once
 
 #include <iostream>
+#include <cstring>
 #include <memory>
 #include <limits>
 #include <stdexcept>
+#include <exception>
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include "./ErrorHelper.h"
 
 #ifdef USE_DOUBLE
 using Real = double;
@@ -103,6 +106,8 @@ class Tensor {
     Tensor atanh() const;
     Tensor ceil() const;
     Tensor clip(const Real lower, const Real upper) const;
+    Tensor cos() const;
+    Tensor cosh() const;
     Tensor floor() const;
 
     Tensor square() const;

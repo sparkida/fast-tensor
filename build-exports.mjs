@@ -59,6 +59,7 @@ function findFuncAndParams(node) {
 const exportNames = [
   '_malloc',
   '_free',
+  'UTF8ToString',
 ];
 const functionSignatures = [
   '    _malloc: (size: number) => number;',

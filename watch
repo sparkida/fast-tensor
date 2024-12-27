@@ -1,7 +1,7 @@
 DEBOUNCE_DELAY=1
 # Last event timestamp and file
 declare -A LAST_EVENT
-inotifywait -m -e modify --format '%f' ./src/cpp |
+inotifywait -m -e modify --format '%f' ./src/cpp ./src/cpp/core |
   while read file; do 
 
     if [[ ! $file =~ ".cpp" && ! $file =~ ".h" ]]; then

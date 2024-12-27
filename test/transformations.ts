@@ -1,6 +1,41 @@
 export default function() {
   describe('reshape', () => {
-    it('should reshape a matrix');
+    it('should infer size of rows', () => {
+      const a = new Tensor([1,2,3,4], [2,2]);
+      const b = a.reshape([-1, 1]);
+      expect(b.array()).to.deep.eql(
+        [[1],[2],[3],[4]]
+      );
+      const c = a.reshape([-1]);
+      expect(c.array()).to.deep.eql(
+        [1,2,3,4]
+      );
+    });
+    it('should infer size of cols', () => {
+      const a = new Tensor([1,2,3,4], [2,2]);
+      const b = a.reshape([1, -1]);
+      expect(b.array()).to.deep.eql(
+        [[1,2,3,4]]
+      );
+    });
+    it('should throw an error reshaping if dimensions are invalid', () => {
+      const a = new Tensor([1,2,3,4], [2,2]);
+      expect(() => a.reshape([-1, -3])).to.throw(
+        "Shapes can not be < 0. Found -3 at dim 1"
+      );
+    });
+    it('should throw an error reshaping if dimensions are invalid', () => {
+      const a = new Tensor([1,2,3,4], [2,2]);
+      expect(() => a.reshape([-1, 3])).to.throw(
+        "The implicit shape can't be a fractional number. Got 4 / 3"
+      );
+    });
+    it('should throw an error reshaping if dimensions are invalid', () => {
+      const a = new Tensor([1,2,3,4], [2,2]);
+      expect(() => a.reshape([4, 2])).to.throw(
+        'Size(4) must match the product of shape 4,2'
+      );
+    });
   });
 
   describe('pad', () => {

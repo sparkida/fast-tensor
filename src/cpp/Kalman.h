@@ -1,5 +1,4 @@
-#ifndef KALMAN_H
-#define KALMAN_H
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -27,5 +26,3 @@ class KalmanFilter {
     std::vector<Real> state;       // State for each coordinate
     std::vector<Real> covariance; // Covariance for each coordinate
 };
-
-#endif

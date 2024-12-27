@@ -46,7 +46,7 @@ Tensor Tensor::norm(NORM_ORD ord, int axis, bool keepdims) const {/*{{{*/
         }
         break;
       default:
-        throw std::invalid_argument("Unsupported norm type");
+        report_error("Unsupported norm type");
         break;
     }
     norms.push_back(result);
@@ -105,7 +105,7 @@ Tensor Tensor::norm(NORM_ORD ord, int axis, bool keepdims) const {/*{{{*/
     }
     ncols = 1;
   } else {
-    throw std::invalid_argument("Axis must be -1 (flat), 0 (column-wise) or 1 (row-wise)");
+    report_error("Axis must be -1 (flat), 0 (column-wise) or 1 (row-wise)");
   }
 
   return Tensor(nrows, ncols, !keepdims && axis < 0, std::move(norms));
@@ -113,12 +113,9 @@ Tensor Tensor::norm(NORM_ORD ord, int axis, bool keepdims) const {/*{{{*/
 
 // Tensor Multiplication
 Tensor Tensor::matmul(const Tensor& other) const {/*{{{*/
-  if (cols != other.rows) {
-    throw std::invalid_argument("Tensor dimensions do not match for multiplication");
-  }
   // Validate shapes for multiplication
   if (cols != other.rows) {
-    throw std::invalid_argument("Tensor shapes are incompatible for multiplication");
+    report_error("Tensor shapes are incompatible for multiplication");
   }
 
   // Determine the shape of the result

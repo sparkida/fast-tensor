@@ -32,11 +32,13 @@ Tensor Tensor::broadcast_op(const Real* input, size_t input_size, Func func) con
     for (size_t i = 0; i < rows; ++i) {
       for (size_t j = 0; j < cols; ++j) {
         size_t index = i * cols + j;
-        vec[index] = func(vec[index], input[i * cols + j]);
+        vec[index] = func(vec[index], input[index]);
       }
     }
   } else {
-    throw std::invalid_argument("Input must be a scalar or a column-wise array with size equal to the number of columns");
+    std::string message = "Cannot broadcast input against shape[" \
+        + std::to_string(rows) + "," + std::to_string(cols) + "]";
+    report_error(message.c_str());
   }
   return result;
 }
