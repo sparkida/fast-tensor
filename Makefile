@@ -26,17 +26,19 @@ CXXFLAGS := -std=c++17 \
 # Exceptions
 EXCEPTIONS ?= 0
 ifeq ($(EXCEPTIONS), 1)
-	WEXCEPTIONS := -sDISABLE_EXCEPTION_CATCHING=0 -fexceptions
+	EXCEPTIONFLAGS := -sDISABLE_EXCEPTION_CATCHING=0 -fexceptions
 else
-	WEXCEPTIONS :=
+	EXCEPTIONFLAGS := -sDISABLE_EXCEPTION_CATCHING=1 -fno-exceptions
 endif
 
 EMCCFLAGS := -s MODULARIZE=1 \
+	$(EXCEPTIONFLAGS) \
 	-s FILESYSTEM=0 \
+	-s EXPORT_ES6=1 \
 	--closure 0
 
 # Combined flags
-FLAGS := $(CXXFLAGS) $(EMCCFLAGS) $(WEXCEPTIONS)
+FLAGS := $(CXXFLAGS) $(EMCCFLAGS) $(EXCEPTIONFLAGS)
 
 # Paths and directories
 ROOT := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
@@ -62,7 +64,6 @@ web: $(DIST_DIR)
 	cd $(SRC_DIR) && \
 		$(BUILD) $(FLAGS) -s ENVIRONMENT=web \
 		-s EXPORTED_FUNCTIONS="$(shell node build-exports.mjs)" \
-		-s EXPORT_ES6=1 \
 		-o $(OUTPUT).js $(SOURCES) && \
 		mv $(OUTPUT).wasm $(DIST_DIR)/ && \
 		mv $(OUTPUT).js $(BIND_DIR)/$(OUTPUT).esm.js && \
@@ -73,7 +74,6 @@ node: $(DIST_DIR)
 	cd $(SRC_DIR) && \
 		$(BUILD) $(FLAGS) -s ENVIRONMENT=node \
 		-s EXPORTED_FUNCTIONS="$(shell node build-exports.mjs)" \
-		-s EXPORT_ES6=1 \
 		-o $(OUTPUT).js $(SOURCES) && \
 		mv $(OUTPUT).wasm $(DIST_DIR)/ && \
 		mv $(OUTPUT).js $(BIND_DIR)/$(OUTPUT).node.esm.js && \
@@ -84,8 +84,6 @@ dev:
 	cd $(SRC_DIR) && \
 		$(BUILD) $(EMCCFLAGS) -s ENVIRONMENT=node \
 		-s EXPORTED_FUNCTIONS="$(shell node build-exports.mjs)" \
-		-s DISABLE_EXCEPTION_CATCHING=0 -fexceptions \
-		-s EXPORT_ES6=1 \
 		-o $(OUTPUT).dev.js $(SOURCES) && \
 		mv $(OUTPUT).dev.wasm $(BIND_DIR)/ && \
 		mv $(OUTPUT).dev.js $(BIND_DIR)/ && \

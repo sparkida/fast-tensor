@@ -1,5 +1,11 @@
 #include "../Tensor.h"
 
+
+// Generic error reporting for javascript
+EM_JS(void, report_error, (const char* msg), {
+    throw new Error(UTF8ToString(msg));
+});
+
 // Used to update the shape on JS interface and avoid
 // the additional interop to sync it
 void update_shape_wire(Tensor* tensor, int* shape_wire) {/*{{{*/

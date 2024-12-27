@@ -134,7 +134,12 @@ export default function() {
         [ [ 3, 3 ], [ 3, 4 ] ]
       );
     });
-    it('should throw an error if invalid type');
+    it('should throw a broadcast error', () => {
+      const a = ft.tensor([1,2,3,4], [2,2]);
+      expect(() => a.maximum([1,2,3])).to.throw(
+        'Cannot broadcast input against shape[2,2]'
+      );
+    });
   });
 
   describe('minimum', () => {

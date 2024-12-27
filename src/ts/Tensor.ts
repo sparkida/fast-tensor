@@ -236,9 +236,9 @@ export class Tensor extends Interface {
     } else {
       rows = shapeOrRows;
     }
+    cols ??= -2;
     const shapeWire = new ShapeWire();
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const newPtr = this.Module._tensor_reshape(this.ptr, rows, cols!, shapeWire.ptr);
+    const newPtr = this.Module._tensor_reshape(this.ptr, rows, cols, shapeWire.ptr);
     const mat = Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
     mat._syncShapeWire(shapeWire);
     return mat;
@@ -374,6 +374,16 @@ export class Tensor extends Interface {
       throw new TypeError('clipByValue expects args (lower<number>, upper<number>)');
     }
     const newPtr = this.Module._tensor_clip(this.ptr, lower, upper);
+    return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
+  }
+
+  cos(): Tensor {
+    const newPtr = this.Module._tensor_cos(this.ptr);
+    return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
+  }
+
+  cosh(): Tensor {
+    const newPtr = this.Module._tensor_cosh(this.ptr);
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 

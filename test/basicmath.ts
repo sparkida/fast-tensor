@@ -80,6 +80,22 @@ export default function() {
     );
   });
 
+  it('cos', () => {
+    const mat = ft.tensor([0, Math.PI / 2, Math.PI * 3 / 4]);
+    const res = mat.cos();
+    expect(res.array()).to.deep.equal(
+      [ 1, -4.371138828673793e-8, -0.7071067690849304 ]
+    );
+  });
+
+  it('cosh', () => {
+    const mat = ft.tensor([-1, 0, 1, 4]);
+    const res = mat.cosh();
+    expect(res.array()).to.deep.equal(
+      [ 1.5430805683135986, 1, 1.5430805683135986, 27.308231353759766 ]
+    );
+  });
+
   it('clipByValue', () => {
     const mat = ft.tensor([1, 2.3, 3.8, 4.9]);
     const res = mat.clipByValue(1.5, 3);

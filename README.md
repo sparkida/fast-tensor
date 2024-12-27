@@ -1,2 +1,2 @@
 # FastTensor
-### High-performance matrix math for the modern web. Powered by WASM.
+### High-performance matrix math for realtime applications. Powered by WASM.

@@ -30,6 +30,8 @@ export interface WasmModule {
     _tensor_atanh: (tensorPtr: number) => number;
     _tensor_ceil: (tensorPtr: number) => number;
     _tensor_clip: (tensorPtr: number, lower: number, upper: number) => number;
+    _tensor_cos: (tensorPtr: number) => number;
+    _tensor_cosh: (tensorPtr: number) => number;
     _tensor_floor: (tensorPtr: number) => number;
     _tensor_mean: (tensorPtr: number, axis: number, keepdims: boolean, shapeWirePtr: number) => number;
     _tensor_square: (tensorPtr: number) => number;
