@@ -28,7 +28,6 @@ Tensor Tensor::reshape(int new_rows, int new_cols) const {/*{{{*/
   int inferred_cols = new_cols == -2 ? -1 : new_cols;
   bool became_1d = false;
 
-  std::cout << inferred_cols << " + " << new_cols << std::endl;
   // handle 
   if (inferred_rows == -1 && (inferred_cols < 1 && new_cols != -2)) {
     std::string message = "Shapes can not be < 0. Found " \

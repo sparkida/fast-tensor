@@ -84,6 +84,7 @@ dev:
 	cd $(SRC_DIR) && \
 		$(BUILD) $(EMCCFLAGS) -s ENVIRONMENT=node \
 		-s EXPORTED_FUNCTIONS="$(shell node build-exports.mjs)" \
+		-DTENSOR_DEBUG \
 		-o $(OUTPUT).dev.js $(SOURCES) && \
 		mv $(OUTPUT).dev.wasm $(BIND_DIR)/ && \
 		mv $(OUTPUT).dev.js $(BIND_DIR)/ && \

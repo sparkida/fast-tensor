@@ -33,31 +33,31 @@ Tensor Tensor::div(bool no_nan, const Real* input, size_t input_size) const {/*{
   return result;
 }/*}}}*/
 
-// Return the maximum of current data compared with scalar
+// Return the maximum of current data
 Tensor Tensor::maximum(const Real* input, size_t input_size) const {/*{{{*/
   return Tensor::broadcast_op(input, input_size,
       [](Real a, Real b) { return std::max(a,b); });
 }/*}}}*/
 
-// Return the minimum of current data compared with scalar
+// Return the minimum of current data
 Tensor Tensor::minimum(const Real* input, size_t input_size) const {/*{{{*/
   return Tensor::broadcast_op(input, input_size,
       [](Real a, Real b) { return std::min(a,b); });
 }/*}}}*/
 
-// Return the mod of current data compared with scalar
+// Return the mod of current data
 Tensor Tensor::mod(const Real* input, size_t input_size) const {/*{{{*/
   return Tensor::broadcast_op(input, input_size,
       [](Real a, Real b) { return std::fmod(a,b); });
 }/*}}}*/
 
-// Return the pow of current data compared with scalar
+// Return the pow of current data
 Tensor Tensor::pow(const Real* input, size_t input_size) const {/*{{{*/
   return Tensor::broadcast_op(input, input_size,
       [](Real a, Real b) { return std::pow(a,b); });
 }/*}}}*/
 
-// Return the squared_diff of current data compared with scalar
+// Return the squared_diff of current data
 Tensor Tensor::squared_diff(const Real* input, size_t input_size) const {/*{{{*/
   return Tensor::broadcast_op(input, input_size,
       [](Real a, Real b) {

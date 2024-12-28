@@ -1,11 +1,7 @@
 #pragma once
 
-#include <iostream>
-#include <cstring>
 #include <memory>
 #include <limits>
-#include <stdexcept>
-#include <exception>
 #include <vector>
 #include <algorithm>
 #include <cmath>
@@ -16,6 +12,13 @@ using Real = double;
 #else
 using Real = float;
 #endif
+
+
+// Don't allow std::cout in production builds
+#ifdef TENSOR_DEBUG
+#include <iostream>
+#endif
+
 
 enum NORM_ORD {
   L2,
