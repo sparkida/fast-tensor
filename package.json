@@ -19,11 +19,11 @@
       "types": "dist/index.d.ts",
       "browser": {
         "import": "./dist/index.esm.js",
-        "require": "./dist/index.cjs.js"
+        "require": "./dist/index.cjs"
       },
       "node": {
         "import": "./dist/index.node.esm.js",
-        "require": "./dist/index.node.cjs.js"
+        "require": "./dist/index.node.cjs"
       },
       "default": "./dist/index.node.esm.js"
     },

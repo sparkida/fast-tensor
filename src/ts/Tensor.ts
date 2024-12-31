@@ -5,20 +5,20 @@ export const NORM_ORD = {
   L1: 1,
   max: 2,
 } as const;
+export const NULL = Symbol('null');
 
-type NormOrdKey = keyof typeof NORM_ORD; // 'L2' | 'L1' | 'max'
+export type NormOrdKey = keyof typeof NORM_ORD; // 'L2' | 'L1' | 'max'
 type NormOrdValue = typeof NORM_ORD[NormOrdKey]; // 0 | 1 | 2
-
-const NULL = Symbol('null');
-type BufferData = Float32Array | Float64Array;
-type Array1d = number[];
-type Array2d = number[][];
-type Data = Array1d | Array2d | BufferData;
-type Shape = number[];
+export type BufferData = Float32Array | Float64Array;
+export type Array1d = number[];
+export type Array2d = number[][];
+export type Data = Array1d | Array2d | BufferData;
+export type Shape = number[];
 type ShapeWireResult = [rows: number, cols: number, is1d: boolean];
-type InputData = number | Array1d | Array2d | Tensor;
-type OptionalNumber = number | null | undefined;
-type OptionalBool = boolean | undefined;
+export type InputData = number | Array1d | Array2d | Tensor;
+export type OptionalNumber = number | null | undefined;
+export type OptionalBool = boolean | undefined;
+
 
 interface InferedShape {
   _rows: number;
@@ -33,13 +33,13 @@ export function tensor(data?: Data | typeof NULL, shape?: Shape) : Tensor {
 // a way to override internal checks on data args
 // such as "zeros" which just needs a new Tensor of shape
 export class Tensor extends Interface {
-  protected static scopedInstances: Tensor[] = [];
-  protected static inScope = false;
-  protected static activePointers = 0;
   private _rows = 0;
   private _cols = 0;
   private is1d = false;
   private keepdims: boolean | null = null;
+  protected static scopedInstances: Tensor[] = [];
+  protected static inScope = false;
+  protected static activePointers = 0;
 
   constructor(data?: Data | typeof NULL, shape?: Shape, ptr?: number) {
     super();
@@ -250,6 +250,12 @@ export class Tensor extends Interface {
     return mat;
   }
 
+  /**
+   * Add a tensor or scalar
+   * @category Arithmetic
+   * @example
+   *  tf.tensor([1,2,3]).add(2);
+   */
   add(input: InputData): Tensor {
     const args = this.wireArgs(input);
     const newPtr = this.Module._tensor_add(this.ptr, args.ptr, args.size);
@@ -257,6 +263,7 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Arithmetic */
   sub(input: InputData): Tensor {
     const args = this.wireArgs(input);
     const newPtr = this.Module._tensor_sub(this.ptr, args.ptr, args.size);
@@ -264,6 +271,7 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Arithmetic */
   mul(input: InputData): Tensor {
     const args = this.wireArgs(input);
     const newPtr = this.Module._tensor_mul(this.ptr, args.ptr, args.size);
@@ -271,6 +279,7 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Arithmetic */
   div(input: InputData, noNan = false): Tensor {
     const args = this.wireArgs(input);
     const newPtr = this.Module._tensor_div(this.ptr, !!noNan, args.ptr, args.size);
@@ -322,26 +331,31 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Basic Math */
   abs(): Tensor {
     const newPtr = this.Module._tensor_abs(this.ptr);
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Basic Math */
   acos(): Tensor {
     const newPtr = this.Module._tensor_acos(this.ptr);
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Basic Math */
   acosh(): Tensor {
     const newPtr = this.Module._tensor_acosh(this.ptr);
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Basic Math */
   asin(): Tensor {
     const newPtr = this.Module._tensor_asin(this.ptr);
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Basic Math */
   asinh(): Tensor {
     const newPtr = this.Module._tensor_asinh(this.ptr);
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
@@ -645,7 +659,7 @@ export class Tensor extends Interface {
  * Used to receive shape synchronously with shape changing calls
  * where the shape cannot be inferred
  */
-export class ShapeWire {
+class ShapeWire {
   static bufferSize = 3 * Int32Array.BYTES_PER_ELEMENT;
   ptr: number;
 
