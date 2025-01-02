@@ -5,20 +5,22 @@ export const NORM_ORD = {
   L1: 1,
   max: 2,
 } as const;
+export const NULL = Symbol('null');
 
-type NormOrdKey = keyof typeof NORM_ORD; // 'L2' | 'L1' | 'max'
+export type NormOrdKey = keyof typeof NORM_ORD; // 'L2' | 'L1' | 'max'
 type NormOrdValue = typeof NORM_ORD[NormOrdKey]; // 0 | 1 | 2
-
-const NULL = Symbol('null');
-type BufferData = Float32Array | Float64Array;
-type Array1d = number[];
-type Array2d = number[][];
-type Data = Array1d | Array2d | BufferData;
-type Shape = number[];
+export type BufferData = Float32Array | Float64Array;
+/** @example [1, 2, 3, 4] */
+export type Array1d = number[];
+/** @example [ [ 1, 2 ], [ 3, 4 ] ] */
+export type Array2d = number[][];
+export type Data = Array1d | Array2d | BufferData;
+export type Shape = number[];
 type ShapeWireResult = [rows: number, cols: number, is1d: boolean];
-type InputData = number | Array1d | Array2d | Tensor;
-type OptionalNumber = number | null | undefined;
-type OptionalBool = boolean | undefined;
+export type InputData = number | Array1d | Array2d | Tensor;
+export type OptionalNumber = number | null | undefined;
+export type OptionalBool = boolean | undefined;
+
 
 interface InferedShape {
   _rows: number;
@@ -33,15 +35,15 @@ export function tensor(data?: Data | typeof NULL, shape?: Shape) : Tensor {
 // a way to override internal checks on data args
 // such as "zeros" which just needs a new Tensor of shape
 export class Tensor extends Interface {
-  protected static scopedInstances: Tensor[] = [];
-  protected static inScope = false;
-  protected static activePointers = 0;
   private _rows = 0;
   private _cols = 0;
   private is1d = false;
   private keepdims: boolean | null = null;
+  protected static scopedInstances: Tensor[] = [];
+  protected static inScope = false;
+  protected static activePointers = 0;
 
-  constructor(data?: Data | typeof NULL, shape?: Shape, ptr?: number) {
+  constructor(data?: Data | typeof NULL, shape?: Shape, ptr?: OptionalNumber) {
     super();
     if (!data) {
       throw new TypeError('Tensor expects first argument to be an array of data');
@@ -66,7 +68,10 @@ export class Tensor extends Interface {
     return new InputArgs(this, data);
   }
 
-  setData(data: Data) {
+  /**
+   * Set the data on the instance's buffer
+   */
+  protected setData(data: Data) {
     const isArray = Array.isArray(data);
     const isTypedArray = ArrayBuffer.isView(data);
 
@@ -88,7 +93,7 @@ export class Tensor extends Interface {
     return this;
   }
 
-  _inferShape(data: Data | null, shape?: Shape) {
+  protected _inferShape(data: Data | null, shape?: Shape) {
     if (shape) {
       if (shape.length === 1) {
         this.is1d = true;
@@ -123,10 +128,26 @@ export class Tensor extends Interface {
     }
   }
 
+  /**
+   * Returns the count of active pointers, useful for debugging memory management.
+   * @category Performance / Memory
+   * @example
+   * ft.memory();
+   */
   static memory() {
     return {pointers: Tensor.activePointers};
   }
 
+  /**
+   * Delete the instance from WASM backend to avoid OOM.
+   * @category Performance / Memory
+   * @example
+   * const mat = tf.ones([2, 2]);
+   * // do some things ...
+   * const result = mat.data();
+   * mat.delete();
+   * // accessing "mat" beyond this point is unsafe
+   */
   delete() {
     if (!this.deleted) {
       Tensor.activePointers--;
@@ -135,18 +156,49 @@ export class Tensor extends Interface {
     }
   }
 
-  static fromPointer(shape: Shape, is1d: boolean, newPtr: number): Tensor {
+  protected static fromPointer(shape: Shape, is1d: boolean, newPtr: number): Tensor {
     return new Tensor(NULL, is1d ? shape.slice(1) : shape, newPtr);
   }
 
+  /**
+   * Start a scope to track any instances created. Should be used with `ft.endScope()`.
+   * See ft.scope() for a simpler approach.
+   * @category Performance / Memory
+   * @example
+   * ft.beginScope();
+   * const a = tf.ones([2,2]);
+   * const b = a.add(2);
+   * const result = b.data();
+   * ft.endScope();
+   * // a and b will have been freed from memory
+   */
   static beginScope() {
     Tensor.inScope = true;
   }
 
+  /**
+   * End a scope of tracked instances. Should be used with `ft.beginScope()`.
+   * See ft.scope() for a simpler approach.
+   * @category Performance / Memory
+   * @example
+   * ft.beginScope();
+   * const a = tf.ones([2,2]);
+   * const b = a.add(2);
+   * const result = b.data();
+   * ft.endScope();
+   * // a and b will have been freed from memory
+   */
   static endScope() {
     Tensor.scope();
   }
 
+  /**
+   * Get the shape of the current tensor
+   * @category Accessing Data
+   * @example
+   * const mat = tf.tensor([ [ 1, 2], [ 3, 4 ] ]);
+   * const shape = mat.shape; // [2, 2]
+   */
   get shape(): Shape {
     if (this.is1d) {
       return [this._cols];
@@ -154,10 +206,24 @@ export class Tensor extends Interface {
     return [this._rows, this._cols];
   }
 
+  /**
+   * Get the number of rows of the current tensor
+   * @category Accessing Data
+   * @example
+   * const mat = tf.tensor([ [ 1 ], [ 2 ] ]);
+   * const cols = mat.rows; // 2
+   */
   get rows() {
     return this._rows;
   }
 
+  /**
+   * Get the number of columns of the current tensor
+   * @category Accessing Data
+   * @example
+   * const mat = tf.tensor([ [ 1 ], [ 2 ] ]);
+   * const cols = mat.cols; // 1
+   */
   get cols() {
     return this._cols;
   }
@@ -169,7 +235,28 @@ export class Tensor extends Interface {
     this.is1d = result[2];
   }
 
-
+  /**
+   * Start a scope to track any instances created, will automatically
+   * clear out any references not returned.
+   * @category Performance / Memory
+   * @example
+   * ft.scope(() => {
+   *  const a = tf.ones([2,2]);
+   *  const b = a.add(2);
+   *  const result = b.data();
+   *  return result;
+   * });
+   * // "a" and "b" will have been freed from memory
+   * @example
+   * const result = ft.scope(() => {
+   *  const a = tf.ones([2,2]);
+   *  const b = a.add(2);
+   *  return b;
+   * });
+   * // only "a" will have been freed from memory
+   * // you will need to manually delete the instance
+   * result.delete();
+   */
   static scope(callback?: () => unknown): unknown {
     const { Module } = Tensor;
     Tensor.inScope = true;
@@ -222,13 +309,22 @@ export class Tensor extends Interface {
     return result;
   }
 
-  // Create a new tensor from current
+  /**
+   * Deep copy the current tensor
+   * @category Creation
+   * @example
+   * const mat = ft.tensor([1, 2]);
+   * const clone = mat.clone();
+   */
   clone() {
     const newPtr = this.Module._tensor_clone(this.ptr);
     const mat = Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
     return mat;
   }
 
+  /**
+   * @category Transformations
+   */
   reshape(shapeOrRows: number | Shape, cols?: number): Tensor {
     let rows;
     if (Array.isArray(shapeOrRows)) {
@@ -244,12 +340,25 @@ export class Tensor extends Interface {
     return mat;
   }
 
+  /**
+   * @category Transformations
+   */
   flatten(): Tensor {
     const newPtr = this.Module._tensor_flatten(this.ptr);
     const mat = Tensor.fromPointer([1, this._rows * this._cols], true, newPtr);
     return mat;
   }
 
+  /**
+   * Add a tensor or scalar, a + b.
+   * @broadcast
+   * @category Arithmetic
+   * @example
+   * // scalar
+   * const mat = ft.tensor([1, 2, 3, 4]).add(2);
+   * // tensor
+   * ft.tensor([1, 2, 3, 4]).add(mat);
+   */
   add(input: InputData): Tensor {
     const args = this.wireArgs(input);
     const newPtr = this.Module._tensor_add(this.ptr, args.ptr, args.size);
@@ -257,6 +366,16 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /**
+   * Subtract a tensor or scalar element-wise, a - b.
+   * @broadcast
+   * @category Arithmetic
+   * @example
+   * // scalar
+   * const mat = ft.tensor([1, 2, 3, 4]).sub(2);
+   * // tensor
+   * ft.tensor([1, 2, 3, 4]).sub(mat);
+   */
   sub(input: InputData): Tensor {
     const args = this.wireArgs(input);
     const newPtr = this.Module._tensor_sub(this.ptr, args.ptr, args.size);
@@ -264,6 +383,16 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /**
+   * Multiply a tensor or scalar element-wise, a * b.
+   * @broadcast
+   * @category Arithmetic
+   * @example
+   * // scalar
+   * const mat = ft.tensor([1, 2, 3, 4]).mul(2);
+   * // tensor
+   * ft.tensor([1, 2, 3, 4]).mul(mat);
+   */
   mul(input: InputData): Tensor {
     const args = this.wireArgs(input);
     const newPtr = this.Module._tensor_mul(this.ptr, args.ptr, args.size);
@@ -271,6 +400,16 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /**
+   * Divides a tensor or scalar element-wise, a / b.
+   * @broadcast
+   * @category Arithmetic
+   * @example
+   * // scalar
+   * const mat = ft.tensor([1, 2, 3, 4]).div(2);
+   * // tensor
+   * ft.tensor([1, 2, 3, 4]).div(mat);
+   */
   div(input: InputData, noNan = false): Tensor {
     const args = this.wireArgs(input);
     const newPtr = this.Module._tensor_div(this.ptr, !!noNan, args.ptr, args.size);
@@ -278,10 +417,30 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /**
+   * Divide a tensor or scalar element-wise, a / b. Return 0 (instead of NaN) if denominator is 0.
+   * @broadcast
+   * @category Arithmetic
+   * @example
+   * // scalar
+   * const mat = ft.tensor([1, 2, 3, 4]).divNoNan(2);
+   * // tensor
+   * ft.tensor([1, 2, 3, 4]).divNoNan(mat);
+   */
   divNoNan(input: InputData): Tensor {
     return this.div(input, true);
   }
 
+  /**
+   * Max of a and b (a > b ? a : b) element-wise.
+   * @broadcast
+   * @category Arithmetic
+   * @example
+   * // scalar
+   * const mat = ft.tensor([1, 2, 3, 4]).maximum(2);
+   * // tensor
+   * ft.tensor([1, 3, 4, 5]).maximum(mat);
+   */
   maximum(input: InputData): Tensor {
     const args = this.wireArgs(input);
     const newPtr = this.Module._tensor_maximum(this.ptr, args.ptr, args.size);
@@ -289,6 +448,16 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /**
+   * Min of a and b (a < b ? a : b) element-wise.
+   * @broadcast
+   * @category Arithmetic
+   * @example
+   * // scalar
+   * const mat = ft.tensor([1, 2, 3, 4]).minimum(2);
+   * // tensor
+   * ft.tensor([0, 1, 2, 3]).minimum(mat);
+   */
   minimum(input: InputData): Tensor {
     const args = this.wireArgs(input);
     const newPtr = this.Module._tensor_minimum(this.ptr, args.ptr, args.size);
@@ -296,6 +465,16 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /**
+   * Modulo of a and b element-wise, a % b.
+   * @broadcast
+   * @category Arithmetic
+   * @example
+   * // scalar
+   * const mat = ft.tensor([1, 2, 3, 4]).mod(2);
+   * // tensor
+   * ft.tensor([2, 4, 6, 8]).mod(mat);
+   */
   mod(input: InputData): Tensor {
     const args = this.wireArgs(input);
     const newPtr = this.Module._tensor_mod(this.ptr, args.ptr, args.size);
@@ -303,6 +482,16 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /**
+   * Power of a and b element-wise, a^b.
+   * @broadcast
+   * @category Arithmetic
+   * @example
+   * // scalar
+   * const mat = ft.tensor([1, 2, 3, 4]).pow(2);
+   * // tensor
+   * ft.tensor([0, 1, 2, 3]).pow(mat);
+   */
   pow(input: InputData): Tensor {
     const args = this.wireArgs(input);
     const newPtr = this.Module._tensor_pow(this.ptr, args.ptr, args.size);
@@ -310,6 +499,16 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /**
+   * Squared difference of a and b element-wise, (a - b) * (a - b).
+   * @broadcast
+   * @category Arithmetic
+   * @example
+   * // scalar
+   * const mat = ft.tensor([1, 2, 3, 4]).squaredDifference(2);
+   * // tensor
+   * ft.tensor([0, 1, 2, 3]).squaredDifference(mat);
+   */
   squaredDifference(input: InputData): Tensor {
     const args = this.wireArgs(input);
     const newPtr = this.Module._tensor_squared_diff(this.ptr, args.ptr, args.size);
@@ -317,41 +516,43 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
-  square(): Tensor {
-    const newPtr = this.Module._tensor_square(this.ptr);
-    return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
-  }
-
+  /** @category Basic Math */
   abs(): Tensor {
     const newPtr = this.Module._tensor_abs(this.ptr);
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Basic Math */
   acos(): Tensor {
     const newPtr = this.Module._tensor_acos(this.ptr);
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Basic Math */
   acosh(): Tensor {
     const newPtr = this.Module._tensor_acosh(this.ptr);
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Basic Math */
   asin(): Tensor {
     const newPtr = this.Module._tensor_asin(this.ptr);
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Basic Math */
   asinh(): Tensor {
     const newPtr = this.Module._tensor_asinh(this.ptr);
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Basic Math */
   atan(): Tensor {
     const newPtr = this.Module._tensor_atan(this.ptr);
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Basic Math */
   atan2(input: InputData): Tensor {
     const args = this.wireArgs(input);
     const newPtr = this.Module._tensor_atan2(this.ptr, args.ptr, args.size);
@@ -359,16 +560,19 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Basic Math */
   atanh(): Tensor {
     const newPtr = this.Module._tensor_atanh(this.ptr);
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Basic Math */
   ceil(): Tensor {
     const newPtr = this.Module._tensor_ceil(this.ptr);
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Basic Math */
   clipByValue(lower: number, upper: number): Tensor {
     if (typeof lower !== 'number' || typeof upper !== 'number') {
       throw new TypeError('clipByValue expects args (lower<number>, upper<number>)');
@@ -377,21 +581,31 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Basic Math */
   cos(): Tensor {
     const newPtr = this.Module._tensor_cos(this.ptr);
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Basic Math */
   cosh(): Tensor {
     const newPtr = this.Module._tensor_cosh(this.ptr);
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Basic Math */
   floor(): Tensor {
     const newPtr = this.Module._tensor_floor(this.ptr);
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /** @category Basic Math */
+  square(): Tensor {
+    const newPtr = this.Module._tensor_square(this.ptr);
+    return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
+  }
+
+  /** @category Basic Math */
   mean(axis: OptionalNumber = -1, keepdims: OptionalBool = false): Tensor {
     // if null change to -1
     axis ??= -1;
@@ -406,6 +620,9 @@ export class Tensor extends Interface {
     return mat;
   }
 
+  /**
+   * @category Matrices
+   */
   norm(
     ord: NormOrdKey | null | undefined = 'L2',
     axis: OptionalNumber = -1, 
@@ -427,6 +644,9 @@ export class Tensor extends Interface {
   }
 
   // TODO move shapewire ptr to 2nd arg (standardize)
+  /**
+   * @category Matrices
+   */
   matMul(tensor: Tensor): Tensor {
     if (!(tensor instanceof Tensor)) {
       throw new TypeError('Expected 1st argument to be of type Tensor');
@@ -438,6 +658,9 @@ export class Tensor extends Interface {
     return mat;
   }
 
+  /**
+   * @category Slicing And Joining
+   */
   reverse(axis: OptionalNumber = -1): Tensor {
     // if null change to -1
     axis ??= -1;
@@ -448,6 +671,9 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
+  /**
+   * @category Matrices
+   */
   transpose(): Tensor {
     if (this.is1d) {
       throw new Error('Attempting to transpose a 1d array, reshape to [1,n] first');
@@ -457,6 +683,40 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._cols, this._rows], false, newPtr);
   }
 
+  /**
+   * @category Slicing And Joining
+   */
+  static stack(matrices: Tensor[]): Tensor {
+    const ptrs = matrices.map(m => m.ptr);
+    // create a reference of data pointers that we can access on C side
+    const count = ptrs.length;
+    const instancePtrs = new Uint32Array(ptrs);
+    const refPtr = Tensor.Module._malloc(count * instancePtrs.BYTES_PER_ELEMENT);
+    Tensor.Module.HEAPU32.set(instancePtrs, refPtr / Uint32Array.BYTES_PER_ELEMENT);
+    const newPtr = Tensor.Module._tensor_stack(refPtr, count);
+    Tensor.Module._free(refPtr);
+    const { rows, cols } = matrices[0];
+    return Tensor.fromPointer([rows * matrices.length, cols], false, newPtr);
+  }
+
+  /**
+   * @category Creation
+   * @example
+   * const mat = ft.tensor([ [ 1, 2 ], [ 3, 4 ] ]);
+   * const diag = mat.diag();
+   */
+  diag(): Tensor {
+    if (!this.is1d) {
+      throw new Error('Tensor.diag expects a 1d array, flatten before calling');
+    }
+    const shapeWire = new ShapeWire();
+    const newPtr = this.Module._tensor_diag(this.ptr, shapeWire.ptr);
+    const mat = Tensor.fromPointer([this._rows, this._cols], false, newPtr);
+    mat._syncShapeWire(shapeWire);
+    return mat;
+  }
+
+  /** @hidden */
   static zeros(shape: Shape): Tensor {
     const s = {} as InferedShape;
     Tensor.prototype._inferShape.call(s, null, shape);
@@ -464,6 +724,20 @@ export class Tensor extends Interface {
     return new Tensor(NULL, s.is1d ? shape.slice(1) : shape);
   }
 
+  /**
+   * @category Creation
+   * @example
+   * const zeros = ft.zeros([2, 2]);
+   * // also can be used on an instance
+   * const mat = ft.tensor([1, 2, 3, 4]);
+   * const matZeros = mat.zeros();
+   */
+  zeros(): Tensor {
+    const shape = [this._rows, this._cols];
+    return new Tensor(NULL, this.is1d ? shape.slice(1) : shape); 
+  }
+
+  /** @hidden */
   static ones(shape: Shape): Tensor {
     const s = {} as InferedShape;
     Tensor.prototype._inferShape.call(s, null, shape);
@@ -472,6 +746,21 @@ export class Tensor extends Interface {
     return new Tensor(data, s.is1d ? shape.slice(1) : shape);
   }
 
+  /**
+   * @category Creation
+   * @example
+   * const ones = ft.ones([2, 2]);
+   * // also can be used on an instance
+   * const mat = ft.tensor([1, 2, 3, 4]);
+   * const matOnes = mat.ones();
+   */
+  ones(): Tensor {
+    const data = Array(this._rows * this._cols).fill(1);
+    const shape = [this._rows, this._cols];
+    return new Tensor(new Float32Array(data), this.is1d ? shape.slice(1) : shape);
+  }
+
+  /** @hidden */
   static eye(shape: Shape): Tensor {
     const s = {} as InferedShape;
     Tensor.prototype._inferShape.call(s, null, shape);
@@ -486,41 +775,14 @@ export class Tensor extends Interface {
     return new Tensor(eye, [_rows, _cols]);
   }
 
-  static stack(matrices: Tensor[]): Tensor {
-    const ptrs = matrices.map(m => m.ptr);
-    // create a reference of data pointers that we can access on C side
-    const count = ptrs.length;
-    const instancePtrs = new Uint32Array(ptrs);
-    const refPtr = Tensor.Module._malloc(count * instancePtrs.BYTES_PER_ELEMENT);
-    Tensor.Module.HEAPU32.set(instancePtrs, refPtr / Uint32Array.BYTES_PER_ELEMENT);
-    const newPtr = Tensor.Module._tensor_stack(refPtr, count);
-    Tensor.Module._free(refPtr);
-    const { rows, cols } = matrices[0];
-    return Tensor.fromPointer([rows * matrices.length, cols], false, newPtr);
-  }
-
-  diag(): Tensor {
-    if (!this.is1d) {
-      throw new Error('Tensor.diag expects a 1d array, flatten before calling');
-    }
-    const shapeWire = new ShapeWire();
-    const newPtr = this.Module._tensor_diag(this.ptr, shapeWire.ptr);
-    const mat = Tensor.fromPointer([this._rows, this._cols], false, newPtr);
-    mat._syncShapeWire(shapeWire);
-    return mat;
-  }
-
-  zeros(): Tensor {
-    const shape = [this._rows, this._cols];
-    return new Tensor(NULL, this.is1d ? shape.slice(1) : shape); 
-  }
-
-  ones(): Tensor {
-    const data = Array(this._rows * this._cols).fill(1);
-    const shape = [this._rows, this._cols];
-    return new Tensor(new Float32Array(data), this.is1d ? shape.slice(1) : shape);
-  }
-
+  /**
+   * @category Creation
+   * @example
+   * const eye = ft.eye([2, 2]);
+   * // also can be used on an instance
+   * const mat = ft.tensor([ [ 1, 2 ], [ 3, 4 ] ]);
+   * const matEye = mat.eye();
+   */
   eye(): Tensor {
     if (this.is1d) {
       throw new Error('Attempting to create identity with 1d shape');
@@ -529,6 +791,9 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._cols, this._rows], false, newPtr);
   }
 
+  /**
+   * @category Transformations
+   */
   pad(paddings: Array1d | Array2d, constant?: number): Tensor {
     if (this.is1d && Array.isArray(paddings[0])) {
       throw new Error('Attempting to pad rows with 1d shape');
@@ -562,7 +827,13 @@ export class Tensor extends Interface {
     return mat;
   }
 
-  // return raw typed array from wasm memory
+  /**
+   * Access the raw typed array from wasm memory, useful for in-place operations.
+   * @category Accessing Data
+   * @example
+   * const mat = tf.tensor([1, 2, 3, 4]);
+   * const buf = mat.buffer();
+   */
   buffer() {
     if (this.deleted) {
       throw new RangeError('Accessing deleted Tensor');
@@ -576,7 +847,13 @@ export class Tensor extends Interface {
     return result;
   }
 
-  // return data copied from buffer
+  /**
+   * Retrieve a copy of the data into a new buffer
+   * @category Accessing Data
+   * @example
+   * const mat = tf.tensor([1, 2, 3, 4]);
+   * const data = mat.data();
+   */
   data() {
     if (this.deleted) {
       throw new RangeError('Accessing deleted Tensor');
@@ -589,7 +866,13 @@ export class Tensor extends Interface {
     );
   }
 
-  // return extrpolated data from buffer
+  /**
+   * Retrieve a copy of the data into a new Array with same shape
+   * @category Accessing Data
+   * @example
+   * const mat = tf.tensor([ [ 1, 2 ], [ 3, 4 ] ]);
+   * const arr = mat.array();
+   */
   array() : number | Array1d | Array2d {
     if (this.deleted) {
       throw new RangeError('Accessing deleted Tensor');
@@ -616,6 +899,7 @@ export class Tensor extends Interface {
     return result;
   }
 
+  /** @hidden */
   bounds() {
     // Define a buffer size matching the `Bounds` struct (4 doubles)
     const boundsBufferSize = 4 * Float32Array.BYTES_PER_ELEMENT;
@@ -645,7 +929,7 @@ export class Tensor extends Interface {
  * Used to receive shape synchronously with shape changing calls
  * where the shape cannot be inferred
  */
-export class ShapeWire {
+class ShapeWire {
   static bufferSize = 3 * Int32Array.BYTES_PER_ELEMENT;
   ptr: number;
 

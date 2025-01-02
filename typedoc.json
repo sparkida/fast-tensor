@@ -1,0 +1,15 @@
+{
+  "entryPoints": ["src/ts/index.ts"],
+  "plugin": ["typedoc-plugin-markdown", "./typedoc-plugin-category-splitter.js"],
+  "out": "./site/docs",
+  "categorizeByGroup": false,
+  "defaultCategory": "General",
+  "entryPointStrategy": "expand",
+  "outputFileStrategy": "members",
+  "sort": ["alphabetical"],
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": true,
+  "excludeInternal": true,
+  "hideGenerator": true
+}

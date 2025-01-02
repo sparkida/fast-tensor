@@ -41,7 +41,7 @@ export default [
         inlineDynamicImports: true,
         sourcemap: true,
       }, {
-        file: 'dist/index.cjs.js',
+        file: 'dist/index.cjs',
         format: 'cjs',
         exports: 'named',
         inlineDynamicImports: true,
@@ -58,6 +58,7 @@ export default [
         }
       }),
       terser({
+        keep_classnames: true,
         format: {
           preamble: PREAMBLE,
         }
@@ -75,7 +76,7 @@ export default [
         inlineDynamicImports: true,
         sourcemap: true,
       }, {
-        file: 'dist/index.node.cjs.js',
+        file: 'dist/index.node.cjs',
         format: 'cjs',
         exports: 'named',
         inlineDynamicImports: true,
@@ -90,6 +91,8 @@ export default [
         }
       }),
       terser({
+        keep_classnames: true,
+        keep_fnames: true,
         format: {
           preamble: PREAMBLE,
         }
