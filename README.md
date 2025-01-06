@@ -43,6 +43,25 @@ const multiplied = added.multiply([ 1, 2, 3 ]);
 const result = multiplied.array();
 ```
 
+**Browser** - *If using NodeJS you can skip this step*
+
+You'll need to specify the WASM path when using a bundler:
+
+```js
+import ft from 'fast-tensor';
+// tell the bundler to preserve this asset
+const TENSOR_WASM_PATH = new URL('fast-tensor/tensor.wasm', import.meta.url).href;
+ft.setWasmPath(TENSOR_WASM_PATH);
+
+// wait for dependencies
+async function run() {
+  await ft.ready();
+  // do things
+}
+
+run();
+```
+
 #### Method chaining
 
 Following the previous example, all methods can be chained.

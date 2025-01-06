@@ -1,6 +1,7 @@
 import type { WasmModule } from './types/WasmModule.d.ts';
 import { WasmInterfaceLoader } from '@loader';
-const isWeb = typeof window === 'object';
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+const isNode = typeof process !== 'undefined' && process.versions?.node !== null;
 
 export default abstract class Interface {
   /** @hidden */
@@ -11,11 +12,13 @@ export default abstract class Interface {
   private static WasmInterfacePromise: Promise<WasmModule> = WasmInterfaceLoader();
 
   static async setWasmPath(path: string) {
-    if (isWeb) {
+    if (!isNode) {
       const loader = await Interface.WasmInterfacePromise;
       Interface.WasmInterfacePromise = loader.default({
         locateFile: () => path
       });
+      // immediately load
+      void Interface.ready();
     }
   }
 
