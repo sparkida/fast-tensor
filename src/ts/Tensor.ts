@@ -643,6 +643,14 @@ export class Tensor extends Interface {
     return mat;
   }
 
+  /** @category Linear Algebra */
+  qr(): [Tensor, Tensor] {
+    const Q = Tensor.eye([this._rows, this._rows]); // Square matrix
+    const newPtr = this.Module._tensor_qr(this.ptr, Q.ptr);
+    const R = Tensor.fromPointer([this._rows, this._cols], false, newPtr);
+    return [Q, R];
+  }
+
   // TODO move shapewire ptr to 2nd arg (standardize)
   /**
    * @category Matrices

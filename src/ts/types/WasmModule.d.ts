@@ -50,6 +50,7 @@ export interface WasmModule {
     _kalman_delete: (kalmanPtr: number) => void;
     _kalman_reset: (kalmanPtr: number) => void;
     _kalman_update: (kalmanPtr: number, observationPtr: number, size: number, qTemp: number, rTemp: number) => void;
+    _tensor_qr: (tensorPtr: number, QPtr: number) => number;
     _tensor_transpose: (tensorPtr: number) => number;
     _tensor_norm: (tensorPtr: number, ord: number, axis: number, keepdims: boolean, shapeWirePtr: number) => number;
     _tensor_matmul: (tensorPtr: number, otherPtr: number, shapeWirePtr: number) => number;

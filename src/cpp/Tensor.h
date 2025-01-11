@@ -116,6 +116,9 @@ class Tensor {
     Tensor square() const;
     Tensor mean(int axis, bool keepdims = false) const;
 
+    // linalg
+    Tensor qr(Tensor* Q) const;
+
     // matrices
     Tensor norm(NORM_ORD ord, int axis, bool keepdims = false) const;
     Tensor matmul(const Tensor& other) const;
