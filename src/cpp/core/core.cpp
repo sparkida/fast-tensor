@@ -1,10 +1,11 @@
 #include "../Tensor.h"
 
-
+#ifdef EM_JS
 // Generic error reporting for javascript
 EM_JS(void, report_error, (const char* msg), {
     throw new Error(UTF8ToString(msg));
 });
+#endif
 
 // Used to update the shape on JS interface and avoid
 // the additional interop to sync it

@@ -11,6 +11,7 @@ import matrices from './matrices.js';
 import transformations from './transformations.js';
 import immutability from './immutability.js';
 import slicejoin from './slicejoin.js';
+import linalg from './linalg.js';
 
 export default function() {
 
@@ -40,6 +41,7 @@ export default function() {
   describe('Transformations', transformations);
   describe('Immutability', immutability);
   describe('Slicing and joining', slicejoin);
+  describe('Linear Alg', linalg);
 
   describe.skip('Benchmark', benchmark);
 

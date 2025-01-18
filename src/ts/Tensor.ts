@@ -605,15 +605,166 @@ export class Tensor extends Interface {
     return Tensor.fromPointer([this._rows, this._cols], this.is1d, newPtr);
   }
 
-  /** @category Basic Math */
+  /**
+   * Returns the logical "and" of values along an axis.
+   * @category Reduction
+   */
+  all(axis: OptionalNumber = -1, keepdims: OptionalBool = false): Tensor {
+    // if null change to -1
+    axis ??= -1;
+    if (this.is1d && axis > -1) {
+      throw new Error('Attempting to perform op on a 1d array with axis, remove axis');
+    }
+    const shapeWire = new ShapeWire();
+    const newPtr = this.Module._tensor_all(this.ptr, axis, keepdims, shapeWire.ptr);
+    const mat = Tensor.fromPointer([this._rows, this._cols], axis < 0, newPtr);
+    mat._syncShapeWire(shapeWire);
+    mat.keepdims = keepdims;
+    return mat;
+  }
+
+  /**
+   * Returns the logical "or" of values along an axis.
+   * @category Reduction
+   */
+  any(axis: OptionalNumber = -1, keepdims: OptionalBool = false): Tensor {
+    // if null change to -1
+    axis ??= -1;
+    if (this.is1d && axis > -1) {
+      throw new Error('Attempting to perform op on a 1d array with axis, remove axis');
+    }
+    const shapeWire = new ShapeWire();
+    const newPtr = this.Module._tensor_any(this.ptr, axis, keepdims, shapeWire.ptr);
+    const mat = Tensor.fromPointer([this._rows, this._cols], axis < 0, newPtr);
+    mat._syncShapeWire(shapeWire);
+    mat.keepdims = keepdims;
+    return mat;
+  }
+
+  /**
+   * Returns the indices of the maximum values along an axis.
+   * @category Reduction
+   */
+  argMax(axis: OptionalNumber = 0): Tensor {
+    // if null change to 0
+    axis ??= 0;
+    if (this.is1d && axis !== 0) {
+      throw new Error(`argMax received axis=${axis} on 1d array, remove axis`);
+    } else if (!this.is1d && (axis < 0 || axis > 1)) {
+      throw new Error(`argMax expects axis to be 0 or 1`);
+    }
+    const shapeWire = new ShapeWire();
+    const newPtr = this.Module._tensor_arg_max(this.ptr, axis, shapeWire.ptr);
+    const mat = Tensor.fromPointer([this._rows, this._cols], axis < 0, newPtr);
+    mat._syncShapeWire(shapeWire);
+    mat.keepdims = false;
+    return mat;
+  }
+
+  /**
+   * Returns the indices of the minimum values along an axis.
+   * @category Reduction
+   */
+  argMin(axis: OptionalNumber = 0): Tensor {
+    // if null change to 0
+    axis ??= 0;
+    if (this.is1d && axis !== 0) {
+      throw new Error(`argMin received axis=${axis} on 1d array, remove axis`);
+    } else if (!this.is1d && (axis < 0 || axis > 1)) {
+      throw new Error(`argMin expects axis to be 0 or 1`);
+    }
+    const shapeWire = new ShapeWire();
+    const newPtr = this.Module._tensor_arg_min(this.ptr, axis, shapeWire.ptr);
+    const mat = Tensor.fromPointer([this._rows, this._cols], axis < 0, newPtr);
+    mat._syncShapeWire(shapeWire);
+    mat.keepdims = false;
+    return mat;
+  }
+
+  /**
+   * Computes the maximum of all elements across the axis
+   * @category Reduction 
+   */
+  max(axis: OptionalNumber = -1, keepdims: OptionalBool = false): Tensor {
+    // if null change to -1
+    axis ??= -1;
+    if (this.is1d && axis > -1) {
+      throw new Error('Attempting to perform max on a 1d array with axis, remove axis');
+    }
+    const shapeWire = new ShapeWire();
+    const newPtr = this.Module._tensor_max(this.ptr, axis, keepdims, shapeWire.ptr);
+    const mat = Tensor.fromPointer([this._rows, this._cols], axis < 0, newPtr);
+    mat._syncShapeWire(shapeWire);
+    mat.keepdims = keepdims;
+    return mat;
+  }
+
+  /**
+   * Computes the mean of all elements across the axis
+   * @category Reduction 
+   */
   mean(axis: OptionalNumber = -1, keepdims: OptionalBool = false): Tensor {
     // if null change to -1
     axis ??= -1;
     if (this.is1d && axis > -1) {
-      throw new Error('Attempting to norm a 1d array with axis, remove axis');
+      throw new Error('Attempting to mean a 1d array with axis, remove axis');
     }
     const shapeWire = new ShapeWire();
     const newPtr = this.Module._tensor_mean(this.ptr, axis, keepdims, shapeWire.ptr);
+    const mat = Tensor.fromPointer([this._rows, this._cols], axis < 0, newPtr);
+    mat._syncShapeWire(shapeWire);
+    mat.keepdims = keepdims;
+    return mat;
+  }
+
+  /**
+   * Computes the minimum of all elements across the axis
+   * @category Reduction 
+   */
+  min(axis: OptionalNumber = -1, keepdims: OptionalBool = false): Tensor {
+    // if null change to -1
+    axis ??= -1;
+    if (this.is1d && axis > -1) {
+      throw new Error('Attempting to perform min on a 1d array with axis, remove axis');
+    }
+    const shapeWire = new ShapeWire();
+    const newPtr = this.Module._tensor_min(this.ptr, axis, keepdims, shapeWire.ptr);
+    const mat = Tensor.fromPointer([this._rows, this._cols], axis < 0, newPtr);
+    mat._syncShapeWire(shapeWire);
+    mat.keepdims = keepdims;
+    return mat;
+  }
+
+  /**
+   * Computes the product of all elements across the axis
+   * @category Reduction 
+   */
+  prod(axis: OptionalNumber = -1, keepdims: OptionalBool = false): Tensor {
+    // if null change to -1
+    axis ??= -1;
+    if (this.is1d && axis > -1) {
+      throw new Error('Attempting to perform prod on a 1d array with axis, remove axis');
+    }
+    const shapeWire = new ShapeWire();
+    const newPtr = this.Module._tensor_prod(this.ptr, axis, keepdims, shapeWire.ptr);
+    const mat = Tensor.fromPointer([this._rows, this._cols], axis < 0, newPtr);
+    mat._syncShapeWire(shapeWire);
+    mat.keepdims = keepdims;
+    return mat;
+  }
+
+  /**
+   * Computes the sum of all elements across the axis
+   * @category Reduction 
+   */
+  sum(axis: OptionalNumber = -1, keepdims: OptionalBool = false): Tensor {
+    // if null change to -1
+    axis ??= -1;
+    if (this.is1d && axis > -1) {
+      throw new Error('Attempting to perform sum on a 1d array with axis, remove axis');
+    }
+    const shapeWire = new ShapeWire();
+    const newPtr = this.Module._tensor_sum(this.ptr, axis, keepdims, shapeWire.ptr);
     const mat = Tensor.fromPointer([this._rows, this._cols], axis < 0, newPtr);
     mat._syncShapeWire(shapeWire);
     mat.keepdims = keepdims;
@@ -641,6 +792,14 @@ export class Tensor extends Interface {
     mat._syncShapeWire(shapeWire);
     mat.keepdims = keepdims;
     return mat;
+  }
+
+  /** @category Linear Algebra */
+  qr(): [Tensor, Tensor] {
+    const Q = Tensor.eye([this._rows, this._rows]); // Square matrix
+    const newPtr = this.Module._tensor_qr(this.ptr, Q.ptr);
+    const R = Tensor.fromPointer([this._rows, this._cols], false, newPtr);
+    return [Q, R];
   }
 
   // TODO move shapewire ptr to 2nd arg (standardize)

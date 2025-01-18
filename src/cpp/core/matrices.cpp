@@ -139,6 +139,48 @@ Tensor Tensor::matmul(const Tensor& other) const {/*{{{*/
   return result;
 }/*}}}*/
 
+// Dot product
+Tensor Tensor::dot(const Tensor& other) const {
+  // Validate dimensions
+  if (is1d) {
+    // Case 1: Dot product of two vectors
+    if (cols != other.cols) {
+      report_error("Tensor.dot(): Dimension mismatch for vector dot product.");
+    }
+
+    Real result = 0.0f;
+    const auto& this_data = *data;
+    const auto& other_data = *other.data;
+
+    for (size_t i = 0; i < cols; ++i) {
+      result += this_data[i] * other_data[i];
+    }
+
+    return Tensor(1, 1, true, {result});
+  }
+  // Case 2: Matrix multiplication
+  if (cols != other.rows) {
+    report_error("Tensor.dot(): Incompatible dimensions for matrix multiplication.");
+  }
+
+  Tensor result(rows, other.cols, false);
+  auto& result_data = *result.data;
+  const auto& this_data = *data;
+  const auto& other_data = *other.data;
+
+  for (size_t i = 0; i < rows; ++i) {
+    for (size_t j = 0; j < other.cols; ++j) {
+      Real sum = 0.0f;
+      for (size_t k = 0; k < cols; ++k) {
+        sum += this_data[i * cols + k] * other_data[k * other.cols + j];
+      }
+      result_data[i * other.cols + j] = sum;
+    }
+  }
+
+  return result;
+}
+
 extern "C" {
   Tensor* tensor_transpose(Tensor* tensor) {
     return new Tensor(tensor->transpose());
@@ -158,6 +200,12 @@ extern "C" {
 
   Tensor* tensor_matmul(Tensor* tensor, const Tensor& other, int* shape_wire) {
     Tensor* new_tensor = new Tensor(tensor->matmul(other));
+    update_shape_wire(new_tensor, shape_wire);
+    return new_tensor;
+  }
+
+  Tensor* tensor_dot(Tensor* tensor, const Tensor& other, int* shape_wire) {
+    Tensor* new_tensor = new Tensor(tensor->dot(other));
     update_shape_wire(new_tensor, shape_wire);
     return new_tensor;
   }

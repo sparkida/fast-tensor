@@ -68,6 +68,14 @@ class Tensor {
     Shape get_shape() const;
 
     // Helpers
+    template <typename Func>
+    Tensor apply_math_op(Func func) const;
+    // implemented in core.cpp
+    Tensor math_op(Real (*op)(Real)) const;
+    template <typename Func>
+    Tensor broadcast_op(const Real* input, size_t input_size, Func func) const;
+
+
     Tensor eye() const;
     Tensor pad(Real constant, size_t rpad_before, size_t rpad_after, size_t cpad_before, size_t cpad_after) const;
     Tensor diag() const;
@@ -77,26 +85,17 @@ class Tensor {
     Tensor reverse(const int axis) const;
     Tensor stack(const Real* instances, size_t input_size) const;
 
-    template <typename Func>
-    Tensor apply_math_op(Func func) const;
-    // helper implemented in core.cpp
-    Tensor math_op(Real (*op)(Real)) const;
-
-    template <typename Func>
-    Tensor broadcast_op(const Real* input, size_t input_size, Func func) const;
 
     // arithmetic
     Tensor add(const Real* input, size_t input_size) const;
     Tensor sub(const Real* input, size_t input_size) const;
     Tensor mul(const Real* input, size_t input_size) const;
     Tensor div(bool no_nan, const Real* input, size_t input_size) const;
-
     Tensor maximum(const Real* input, size_t input_size) const;
     Tensor minimum(const Real* input, size_t input_size) const;
     Tensor mod(const Real* input, size_t input_size) const;
     Tensor pow(const Real* input, size_t input_size) const;
     Tensor squared_diff(const Real* input, size_t input_size) const;
-
 
     // basicmath
     Tensor abs() const;
@@ -112,16 +111,30 @@ class Tensor {
     Tensor cos() const;
     Tensor cosh() const;
     Tensor floor() const;
-
     Tensor square() const;
-    Tensor mean(int axis, bool keepdims = false) const;
+
+    // linalg
+    Tensor qr(Tensor* Q) const;
 
     // matrices
     Tensor norm(NORM_ORD ord, int axis, bool keepdims = false) const;
     Tensor matmul(const Tensor& other) const;
+    Tensor dot(const Tensor& other) const;
+
+    // reduction
+    Tensor all(int axis, bool keepdims = false) const;
+    Tensor any(int axis, bool keepdims = false) const;
+    Tensor arg_max(int axis) const;
+    Tensor arg_min(int axis) const;
+    Tensor max(int axis, bool keepdims = false) const;
+    Tensor mean(int axis, bool keepdims = false) const;
+    Tensor min(int axis, bool keepdims = false) const;
+    Tensor prod(int axis, bool keepdims = false) const;
+    Tensor sum(int axis, bool keepdims = false) const;
+
 
   private:
-    Real INF = std::numeric_limits<Real>::infinity();
+    const Real INF = std::numeric_limits<Real>::infinity();
 };
 
 // Used to update the shape on JS interface and avoid

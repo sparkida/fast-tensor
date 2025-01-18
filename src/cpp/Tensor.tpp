@@ -1,5 +1,6 @@
 #pragma once
 
+// Generic math operation
 template <typename Func>
 Tensor Tensor::apply_math_op(Func func) const {
   Tensor result = deepcopy();

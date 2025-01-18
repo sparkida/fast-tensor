@@ -22,25 +22,32 @@ yarn add fast-tensor
 ```js
 import ft from 'fast-tensor';
 
-// creating a 2d Matrix
-const mat = ft.tensor([
-  [ 1, 2, 3 ],
-  [ 4, 5, 6 ]
-]);
-// mat.shape => [ 2, 3 ]
+async function main() {
+  // wait for WASM to load
+  await ft.ready();
 
-// or specify the shape directly
-const mat = ft.tensor(
-  [ 1, 2, 3, 4, 5, 6 ],
-  [ 2, 3 ]
-);
+  // creating a 2d Matrix
+  const mat = ft.tensor([
+    [ 1, 2, 3 ],
+    [ 4, 5, 6 ]
+  ]);
+  // mat.shape => [ 2, 3 ]
 
-// perform some operations
-const added = mat.add(2);
-const multiplied = added.multiply([ 1, 2, 3 ]);
+  // or specify the shape directly
+  const mat = ft.tensor(
+    [ 1, 2, 3, 4, 5, 6 ],
+    [ 2, 3 ]
+  );
 
-// get the resulting data
-const result = multiplied.array();
+  // perform some operations
+  const added = mat.add(2);
+  const multiplied = added.multiply([ 1, 2, 3 ]);
+
+  // get the resulting data
+  const result = multiplied.array();
+}
+
+main();
 ```
 
 **Browser** - *If using NodeJS you can skip this step*
@@ -54,12 +61,14 @@ const TENSOR_WASM_PATH = new URL('fast-tensor/tensor.wasm', import.meta.url).hre
 ft.setWasmPath(TENSOR_WASM_PATH);
 
 // wait for dependencies
-async function run() {
+async function main() {
+  // wait for WASM to load
   await ft.ready();
+
   // do things
 }
 
-run();
+main();
 ```
 
 #### Method chaining
