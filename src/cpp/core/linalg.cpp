@@ -1,6 +1,7 @@
 #include "../Tensor.h"
 
-Tensor Tensor::qr(Tensor* Q) const {
+// QR decomposition
+Tensor Tensor::qr(Tensor* Q) const {/*{{{*/
   Tensor R = deepcopy();
   auto& R_data = (*R.data);
   auto& Q_data = *Q->data;
@@ -17,7 +18,9 @@ Tensor Tensor::qr(Tensor* Q) const {
       norm_x += val * val;
     }
     norm_x = std::sqrt(norm_x);
-    if (x[0] > 0) norm_x = -norm_x;
+    if (x[0] > 0) {
+      norm_x = -norm_x;
+    }
 
     x[0] -= norm_x;
     Real norm_v = 0.0;
@@ -26,7 +29,9 @@ Tensor Tensor::qr(Tensor* Q) const {
     }
     norm_v = std::sqrt(norm_v);
 
-    if (norm_v < 1e-10) continue; // Skip if norm is too small
+    if (norm_v < 1e-10) {
+      continue; // Skip if norm is too small
+    }
 
     for (Real& val : x) {
       val /= norm_v;
@@ -55,7 +60,8 @@ Tensor Tensor::qr(Tensor* Q) const {
     }
   }
   return R;
-}
+}/*}}}*/
+
 
 extern "C" {
   Tensor* tensor_qr(Tensor* tensor, Tensor* Q) { return new Tensor(tensor->qr(Q)); }

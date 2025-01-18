@@ -33,7 +33,6 @@ export interface WasmModule {
     _tensor_cos: (tensorPtr: number) => number;
     _tensor_cosh: (tensorPtr: number) => number;
     _tensor_floor: (tensorPtr: number) => number;
-    _tensor_mean: (tensorPtr: number, axis: number, keepdims: boolean, shapeWirePtr: number) => number;
     _tensor_square: (tensorPtr: number) => number;
     _tensor_create: (rows: number, cols: number, is1d: boolean) => number;
     _tensor_delete: (tensorPtr: number) => void;
@@ -54,6 +53,16 @@ export interface WasmModule {
     _tensor_transpose: (tensorPtr: number) => number;
     _tensor_norm: (tensorPtr: number, ord: number, axis: number, keepdims: boolean, shapeWirePtr: number) => number;
     _tensor_matmul: (tensorPtr: number, otherPtr: number, shapeWirePtr: number) => number;
+    _tensor_dot: (tensorPtr: number, otherPtr: number, shapeWirePtr: number) => number;
+    _tensor_all: (tensorPtr: number, axis: number, keepdims: boolean, shapeWirePtr: number) => number;
+    _tensor_any: (tensorPtr: number, axis: number, keepdims: boolean, shapeWirePtr: number) => number;
+    _tensor_arg_max: (tensorPtr: number, axis: number, shapeWirePtr: number) => number;
+    _tensor_arg_min: (tensorPtr: number, axis: number, shapeWirePtr: number) => number;
+    _tensor_max: (tensorPtr: number, axis: number, keepdims: boolean, shapeWirePtr: number) => number;
+    _tensor_mean: (tensorPtr: number, axis: number, keepdims: boolean, shapeWirePtr: number) => number;
+    _tensor_min: (tensorPtr: number, axis: number, keepdims: boolean, shapeWirePtr: number) => number;
+    _tensor_prod: (tensorPtr: number, axis: number, keepdims: boolean, shapeWirePtr: number) => number;
+    _tensor_sum: (tensorPtr: number, axis: number, keepdims: boolean, shapeWirePtr: number) => number;
     _tensor_reverse: (tensorPtr: number, axis: number) => number;
     _tensor_stack: (instancesPtr: number, size: number) => number;
     _tensor_pad: (tensorPtr: number, shapeWirePtr: number, constant: number, rpadBefore: number, rpadAfter: number, cpadBefore: number, cpadAfter: number) => number;
