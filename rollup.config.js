@@ -39,13 +39,13 @@ export default [
         format: 'esm',
         exports: 'named',
         inlineDynamicImports: true,
-        sourcemap: true,
+        sourcemap: false,
       }, {
         file: 'dist/index.cjs',
         format: 'cjs',
         exports: 'named',
         inlineDynamicImports: true,
-        sourcemap: true,
+        sourcemap: false,
       }
     ],
     plugins: [
@@ -74,13 +74,13 @@ export default [
         format: 'esm',
         exports: 'named',
         inlineDynamicImports: true,
-        sourcemap: true,
+        sourcemap: false,
       }, {
         file: 'dist/index.node.cjs',
         format: 'cjs',
         exports: 'named',
         inlineDynamicImports: true,
-        sourcemap: true,
+        sourcemap: false,
       }
     ],
     plugins: [
